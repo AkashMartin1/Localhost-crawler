@@ -1,3 +1,5 @@
+from time import sleep
+import sqlalchemy
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from models.record import Record
 from models.tracker import Tracker
@@ -10,8 +12,8 @@ from sqlalchemy.orm import sessionmaker
 from database import Database
 from models.domain import Domain
 
-
 downloadable_files = ["mp4"]
+
 
 class Main:
     def __init__(self):
@@ -30,6 +32,10 @@ class Main:
                 self.session.rollback()
                 print(str(e))
 
+    def open_conn(self):
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
+
     def parse(self):
         while True:
             t = threading.Thread(self.actions())
@@ -42,6 +48,7 @@ class Main:
 
     # @timeout(15)
     def get_through_url(self, url=None):
+        self.open_conn()
         if url is None:
             try:
                 tracker = self.session.query(Tracker).one()
@@ -60,9 +67,15 @@ class Main:
         if int(response.headers["content-length"]) <= 2097152:
             data = requests.get(url)
             if self.session.query(Record).filter(Record.url == url).count() == 0:
-                record = Record(url=url, text=data.content)
-                self.session.add(record)
-                self.session.commit()
+                try:
+                    record = Record(url=url, text=data.content)
+                    self.session.add(record)
+                    self.session.commit()
+                except Exception as e:
+                    print(Terminal().bold_green_on_bright_green("Error " + url))
+                    sleep(5)
+                    self.open_conn()
+                    return False
             for data in re.findall(
                     r'(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?',
                     data.content):
@@ -70,7 +83,8 @@ class Main:
                 url = (data[0] + "://" + data[1] + data[2])
                 print(Terminal().bold_red_on_bright_green("Scanning......." + url))
                 try:
-                    self.get_through_url(url)
+                    if self.session.query(Record).filter(Record.url == url).count() == 0:
+                        self.get_through_url(url)
                 except Exception as e:
                     print(e)
 
