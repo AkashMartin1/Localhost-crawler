@@ -4,6 +4,9 @@ from sqlalchemy.engine.reflection import Inspector
 
 class Database:
     def __init__(self):
+        pass
+
+    def connect(self):
         engine = create_engine('postgresql://admin:admin@localhost/search_engine', echo=True)
         engine.connect()
         inspector = Inspector.from_engine(engine)
@@ -30,3 +33,5 @@ class Database:
                                        Column('disabled', Boolean),
                                        Column('Blocked', Boolean))
                     metadata.create_all()
+        engine = create_engine('postgresql://admin:admin@localhost/search_engine', echo=True)
+        return engine.connect()
