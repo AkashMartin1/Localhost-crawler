@@ -4,13 +4,11 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class Record(Base):
+class Tracker(Base):
 
-    __tablename__ = "records"
+    __tablename__ = "trackers"
     id = Column(Integer, primary_key=True)
-    url = Column(Text)
-    text = Column(Text)
+    last_url = Column(Text)
 
-    def __init__(self, url, text):
-        self.url = url
-        self.text = text
+    def __init__(self, last_url):
+        self.last_url = last_url

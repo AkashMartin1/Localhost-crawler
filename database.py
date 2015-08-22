@@ -10,7 +10,7 @@ class Database:
         engine = create_engine('postgresql://admin:admin@localhost/search_engine', echo=True)
         engine.connect()
         inspector = Inspector.from_engine(engine)
-        table_names = ["records", "domains"]
+        table_names = ["records", "domains", "trackers"]
         for table_name in table_names:
             if table_name not in inspector.get_table_names():
                 print(table_name + " not exists")
@@ -23,7 +23,7 @@ class Database:
                                        Column('meta_data', String(200)),
                                        Column('text', Text),
                                        Column('snapshot', Text),
-                                       Column('url', String(250)),
+                                       Column('url', Text),
                                        Column('updated_at', DateTime))
                     metadata.create_all()
                 elif table_name == "domains":
@@ -32,6 +32,11 @@ class Database:
                                        Column('name', String(100)),
                                        Column('disabled', Boolean),
                                        Column('Blocked', Boolean))
+                    metadata.create_all()
+                elif table_name == "trackers":
+                    main_table = Table(table_name, metadata,
+                                       Column('id', Integer, primary_key=True, autoincrement='ignore_fk'),
+                                       Column('last_url', Text))
                     metadata.create_all()
         engine = create_engine('postgresql://admin:admin@localhost/search_engine', echo=True)
         return engine.connect()
