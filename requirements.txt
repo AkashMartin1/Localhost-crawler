@@ -1,0 +1,5 @@
+requests
+Flask==0.10.1
+SQLAlchemy==1.0
+PyYAML==3.11
+psycopg2==2.6.1
